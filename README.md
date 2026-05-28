@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="256" height="256" alt="GFN Discord RPC" src="https://github.com/user-attachments/assets/56d13238-9567-4b64-9059-6e6e5ba90531" />
+  <img width="256" height="256" alt="GFN Discord RPC" src="https://i.ibb.co/0RDZx9Jb/khgjghgh.webp" />
 </p>
 
 # 🎮 GFN Discord RPC
@@ -12,7 +12,7 @@
 
 Show the game you are playing through NVIDIA GeForce NOW as Discord Rich Presence.
 
-<img width="3128" height="1344" alt="GFN Discord RPC preview" src="https://github.com/user-attachments/assets/1e694c2e-8a66-43a8-adff-722b5e90e62f" />
+<img width="3128" height="1344" alt="GFN Discord RPC preview" src="https://i.ibb.co/k20rYk02/kjdusfhgvgjuszh.webp" />
 
 ***
 
