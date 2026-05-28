@@ -119,3 +119,29 @@ Logs are stored here:
 ```text
 %APPDATA%\GFN Discord RPC\app.log
 ```
+
+## 🔨 Build from Source
+
+Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/astral-sh/uv).
+
+1. Clone the repository and install dependencies:
+
+```text
+git clone https://github.com/LumiDevLabs/geforce-now-discord-rpc.git
+cd geforce-now-discord-rpc
+uv sync
+```
+
+2. Run the app directly:
+
+```text
+uv run python main.py
+```
+
+3. To build a standalone `.exe` and installer, run the build script (requires [Nuitka](https://nuitka.net/) and optionally [Inno Setup](https://jrsoftware.org/isinfo.php)):
+
+```text
+.\build.ps1
+```
+
+The compiled executable will be placed in `dist\` and the installer in `installer\`.
