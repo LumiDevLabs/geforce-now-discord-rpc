@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# Build & distribution
+build/
+dist/
+installer/
+*.egg-info/
+
+# PyInstaller
+*.spec
+
+# uv
+.python-version
+
+# JetBrains / PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+[Dd]esktop.ini
