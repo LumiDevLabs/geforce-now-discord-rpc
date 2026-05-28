@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import logging
 import os
 import threading
@@ -7,9 +8,30 @@ from tkinter import messagebox
 
 from autostart import sync_autostart_command
 from config import load_config
-from constants import APP_DIR, APP_NAME, CONFIG_FILE, LOG_FILE
+from constants import APP_DIR, APP_NAME, APP_RUN_VALUE, CONFIG_FILE, LOG_FILE
 from discord_rpc import RpcManager
 from game_detection import get_active_gfn_game
+
+_MUTEX_NAME = f"Global\\{APP_RUN_VALUE}_SingleInstance"
+_mutex_handle: int | None = None
+
+
+def _acquire_single_instance() -> bool:
+    """Create a named mutex to ensure only one instance runs at a time.
+
+    Returns True if this is the first instance, False if another is already running.
+    The mutex handle is kept alive in _mutex_handle for the lifetime of the process.
+    """
+    global _mutex_handle
+    ERROR_ALREADY_EXISTS = 183
+
+    handle = ctypes.windll.kernel32.CreateMutexW(None, True, _MUTEX_NAME)
+    if ctypes.windll.kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return False
+
+    _mutex_handle = handle
+    return True
 
 APP_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
@@ -107,6 +129,10 @@ class RpcService:
 
 
 def main() -> None:
+    if not _acquire_single_instance():
+        messagebox.showinfo(APP_NAME, f"{APP_NAME} is already running in the system tray.")
+        return
+
     if not _check_env_vars():
         return
 
