@@ -34,8 +34,8 @@ def _check_env_vars() -> bool:
         APP_NAME,
         f"Missing required system environment variables:\n\n"
         f"{names}\n\n"
-        f"Set them in Windows Settings > System > About >\n"
-        f"Advanced system settings > Environment Variables,\n"
+        f"Set them in Windows (Win + S → search \"environment variables\" →\n"
+        f"Edit environment variables for your account),\n"
         f"then restart the app.",
     )
     return False
