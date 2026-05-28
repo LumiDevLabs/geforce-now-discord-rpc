@@ -33,7 +33,7 @@ Show the game you are playing through NVIDIA GeForce NOW as Discord Rich Presenc
    - Whether it should start automatically when you sign in.
 3. After installation, the app will appear in your **Windows system tray**.
 
-## ⚙️ First Setup
+## ⚙️ First Setup (~5 minutes)
 
 Before using this app, disable the built-in Discord Rich Presence in GeForce NOW so it does not clash with this program:
 
