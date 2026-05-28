@@ -9,7 +9,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Rich%20Presence-5865F2?logo=discord&logoColor=white)](https://discord.com/developers/applications)
 [![GeForce NOW](https://img.shields.io/badge/GeForce%20NOW-76b900?logo=nvidia&logoColor=white)](https://www.nvidia.com/en-us/geforce-now/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Downloads](https://img.shields.io/github/downloads/LumiDevLabs/geforce-now-discord-rpc/total?logo=github&color=blue&maxAge=300)](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases)
+[![Downloads](https://img.shields.io/github/downloads/LumiDevLabs/geforce-now-discord-rpc/total?logo=github&color=blue&cacheSeconds=300)](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases)
 
 Show the game you are playing through NVIDIA GeForce NOW as Discord Rich Presence.
 
