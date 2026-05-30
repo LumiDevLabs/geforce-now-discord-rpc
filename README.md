@@ -63,6 +63,8 @@ The app needs three free keys for Discord status and game artwork. Launch the ap
 }
 ```
 
+On Windows, the recommended option is to add these same three names as **user environment variables** instead. Search for **environment variables** in Windows, open **Edit environment variables for your account**, and add each key under **User variables**.
+
 ### Discord Client ID
 
 1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
