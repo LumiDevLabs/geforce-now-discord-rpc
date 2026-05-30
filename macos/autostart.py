@@ -27,6 +27,7 @@ def _expected_plist() -> dict:
         "ProgramArguments": _program_arguments(),
         "RunAtLoad": True,
         "ProcessType": "Interactive",
+        "LimitLoadToSessionType": "Aqua",
     }
 
 
@@ -95,6 +96,9 @@ def sync_autostart_command() -> None:
     data = _read_plist()
     if not data:
         return
-    if data.get("ProgramArguments") != _program_arguments():
-        log.info("Repairing stale LaunchAgent path")
+    if (
+        data.get("ProgramArguments") != _program_arguments()
+        or data.get("LimitLoadToSessionType") != "Aqua"
+    ):
+        log.info("Repairing stale or incomplete LaunchAgent configuration")
         set_autostart(True)
