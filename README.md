@@ -5,7 +5,7 @@
 # 🎮 GFN Discord RPC
 
 [![GitHub release](https://img.shields.io/github/v/release/LumiDevLabs/geforce-now-discord-rpc)](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows-blue?logo=windows)](https://github.com/LumiDevLabs/geforce-now-discord-rpc)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)](https://github.com/LumiDevLabs/geforce-now-discord-rpc)
 [![Discord](https://img.shields.io/badge/Discord-Rich%20Presence-5865F2?logo=discord&logoColor=white)](https://discord.com/developers/applications)
 [![GeForce NOW](https://img.shields.io/badge/GeForce%20NOW-76b900?logo=nvidia&logoColor=white)](https://www.nvidia.com/en-us/geforce-now/)
 [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -19,130 +19,123 @@ Show the game you are playing through NVIDIA GeForce NOW as Discord Rich Presenc
 
 ## ✨ Features
 
-- **Background Operation:** Runs quietly in the Windows system tray.
-- **Auto-Detection:** Automatically detects the active GeForce NOW game window.
-- **Rich Status:** Updates your Discord status with the game name and artwork.
-- **Easy Configuration:** Edit settings directly from a simple tray menu.
-- **Auto-Start:** Option to start automatically with Windows.
-- **Update Checks:** Can automatically check GitHub Releases for new versions.
+- **Windows + macOS:** Runs in the Windows tray or macOS menu bar.
+- **Auto Detection:** Finds the active GeForce NOW game automatically.
+- **Rich Status:** Shows the game name, artwork, and play time on Discord.
+- **Easy Settings:** Edit config, secrets, logs, updates, and auto-start from the app menu.
+- **Update Checks:** Can check GitHub Releases for new versions.
 
 ## 🚀 Installation
 
-1. Download the latest installer from the [Releases](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases) page.
-2. Run the installer setup. During installation, you can choose:
-   - Where to install the application.
-   - Whether it should start automatically when you sign in.
-3. After installation, the app will appear in your **Windows system tray**.
+Before using the app, open **GeForce NOW** → **Settings** → **Connections** and turn off GeForce NOW's built-in Discord Rich Presence so both apps do not fight each other.
+
+### 🪟 Windows
+
+1. Download `GFNDiscordRPCSetup.exe` from [Releases](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases).
+2. Run the installer.
+3. Start the app from the Windows tray icon.
+
+### 🍏 macOS
+
+1. Download the right `.dmg` from [Releases](https://github.com/LumiDevLabs/geforce-now-discord-rpc/releases):
+   - Apple Silicon: `GFN-Discord-RPC-arm64.dmg`
+   - Intel: `GFN-Discord-RPC-x86_64.dmg`
+2. Open the `.dmg` and drag **GFN Discord RPC** into **Applications**.
+3. Open the app. It lives in the macOS menu bar and has no Dock icon.
+
+If macOS says the app is damaged, run this in Terminal and open it again:
+
+```bash
+sudo xattr -cr "/Applications/GFN Discord RPC.app"
+```
+
+On first launch, macOS may ask for **Screen Recording** permission. This is only used to read the GeForce NOW window title, not to record your screen. Enable it in **System Settings** → **Privacy & Security** → **Screen Recording**, then restart the app.
 
 ## ⚙️ First Setup (~5 minutes)
 
-Before using this app, disable the built-in Discord Rich Presence in GeForce NOW so it does not clash with this program:
+The app needs three free keys for Discord status and game artwork. Launch the app once and it will create/open `secrets.json` for you.
 
-1. Open **GeForce NOW**.
-2. Go to **Settings** → **Connections**.
-3. Scroll down and **disable** the default Discord Rich Presence option.
+```json
+{
+    "GFN_DISCORD_CLIENT_ID": "your-discord-app-id",
+    "GFN_STEAMGRIDDB_API_KEY": "your-steamgriddb-key",
+    "GFN_IMGBB_API_KEY": "your-imgbb-key"
+}
+```
 
-Then set the required **Windows environment variables** and configure the app from the tray menu.
+On Windows, the recommended option is to add these same three names as **user environment variables** instead. Search for **environment variables** in Windows, open **Edit environment variables for your account**, and add each key under **User variables**.
 
-### Required Environment Variables
+### Discord Client ID
 
-1. Press **Win + S** and search **environment variables**.
-2. Open **Edit environment variables for your account**.
-3. Under **User variables**, click **New...**.
-4. Use the variable name from the table below and paste the matching value into **Variable value**.
-5. Repeat this for all three variables.
-6. Click **OK** on every window, then fully close and reopen the app.
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Create a new application.
+3. Copy the **Application ID** from **General Information**.
+4. Paste it as `GFN_DISCORD_CLIENT_ID`.
 
-| Variable | Description |
-| :--- | :--- |
-| `GFN_DISCORD_CLIENT_ID` | Your Discord application client ID. |
-| `GFN_STEAMGRIDDB_API_KEY` | Used to find game artwork from SteamGridDB. |
-| `GFN_IMGBB_API_KEY` | Used to upload artwork so Discord can display it. |
+No bot token or OAuth setup is needed. Just keep the Discord desktop app open while playing.
 
-> ℹ️ **Note:** These are Windows user environment variables, not entries in the config file. The app will show an error on startup if any are missing.
+### SteamGridDB API Key
 
-#### Discord Client ID (`GFN_DISCORD_CLIENT_ID`)
+1. Sign in at [SteamGridDB](https://www.steamgriddb.com/).
+2. Open [steamgriddb.com/profile/preferences](https://www.steamgriddb.com/profile/preferences).
+3. Go to the **API** tab and copy/request your key.
+4. Paste it as `GFN_STEAMGRIDDB_API_KEY`.
 
-1. Open the [Discord Developer Portal](https://discord.com/developers/applications) and sign in.
-2. Click **New Application**, choose a name (for example `GFN Discord RPC`), and click **Create**.
-3. On **General Information**, copy the **Application ID**. This is the client ID used by Discord RPC.
-4. Add it as the `GFN_DISCORD_CLIENT_ID` user environment variable.
-
-> ℹ️ **Note:** Keep Discord desktop open while using this app. You only need the Application ID — no bot token or OAuth setup is required.
-
-#### SteamGridDB API Key (`GFN_STEAMGRIDDB_API_KEY`)
-
-1. Go to [SteamGridDB](https://www.steamgriddb.com/) and sign in with Steam.
-2. Open your profile **Preferences** page: [steamgriddb.com/profile/preferences](https://www.steamgriddb.com/profile/preferences)
-3. Open the **API** tab.
-4. Copy your API key (or generate one if needed).
-5. Add it as the `GFN_STEAMGRIDDB_API_KEY` user environment variable.
-
-#### ImgBB API Key (`GFN_IMGBB_API_KEY`)
+### ImgBB API Key
 
 1. Open the [ImgBB API page](https://api.imgbb.com/).
-2. Sign in or create an account if ImgBB asks you to.
-3. Generate or copy your API key from the API page.
-4. Add it as the `GFN_IMGBB_API_KEY` user environment variable.
+2. Sign in or create an account.
+3. Copy/create your API key.
+4. Paste it as `GFN_IMGBB_API_KEY`.
 
-> ℹ️ **Note:** ImgBB is free and hosts the game artwork so Discord can load it. Do not share your API key publicly.
+## 🖱️ App Menu
 
-Right-click the tray icon and select **`Edit Settings`** to configure the remaining options.
+Right-click the tray/menu bar icon to access:
 
-### Optional Settings
+- **`Edit Settings`** - Change app options.
+- **`Edit Secrets`** - Update API keys.
+- **`Open Logs`** - Open the log file.
+- **`Check for Updates`** - Check GitHub Releases manually.
+- **`Start at Login`** - Toggle auto-start.
+- **`Quit` / `Close`** - Exit the app.
 
-| Field | Description |
-| :--- | :--- |
-| `Check Interval Seconds` | How often the app checks the active game. |
-| `Default Image URL` | Fallback image when no artwork is found. |
-| `Activity Type` | Discord activity type (`PLAYING`, `LISTENING`, `WATCHING`, `COMPETING`). |
-| `Check for Updates` | Checks for new GitHub Releases on startup. |
+## 📄 Files
 
-> ℹ️ **Note:** Settings are saved automatically to:
-> `%APPDATA%\GFN Discord RPC\config.json`
-> You do not need to edit anything inside the installation folder.
-
-## 🖱️ Tray Menu
-
-Right-click the tray icon to access all quick actions:
-
-- **`Edit Settings`** – Open the settings window.
-- **`Open Config JSON`** – Open the raw config file.
-- **`Open Logs`** – Open the log file.
-- **`Check for Updates`** – Check GitHub Releases manually.
-- **`Start with Windows`** – Toggle auto-start.
-- **`Close`** – Exit the app.
-
-## 📄 Logs
-
-Logs are stored here:
+Windows:
 
 ```text
-%APPDATA%\GFN Discord RPC\app.log
+%APPDATA%\GFN Discord RPC\
 ```
+
+macOS:
+
+```text
+~/Library/Application Support/GFN Discord RPC/
+```
+
+This folder contains `config.json`, `secrets.json`, and `app.log`.
 
 ## 🔨 Build from Source
 
 Requires [Python 3.12+](https://www.python.org/) and [uv](https://github.com/astral-sh/uv).
 
-1. Clone the repository and install dependencies:
-
-```text
+```bash
 git clone https://github.com/LumiDevLabs/geforce-now-discord-rpc.git
 cd geforce-now-discord-rpc
 uv sync
-```
-
-2. Run the app directly:
-
-```text
 uv run python main.py
 ```
 
-3. To build a standalone `.exe` and installer, run the build script (requires [Nuitka](https://nuitka.net/) and optionally [Inno Setup](https://jrsoftware.org/isinfo.php)):
+Build Windows:
 
-```text
-.\build.ps1
+```powershell
+.\windows\build.ps1
 ```
 
-The compiled executable will be placed in `dist\` and the installer in `installer\`.
+Build macOS:
+
+```bash
+bash macos/build.sh
+```
+
+Releases are built with GitHub Actions and include the Windows installer plus Apple Silicon and Intel macOS DMGs.

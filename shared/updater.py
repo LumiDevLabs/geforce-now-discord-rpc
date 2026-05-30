@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import logging
-import os
-from tkinter import messagebox
 
 import requests
 
-from constants import APP_NAME, APP_VERSION, GITHUB_REPO
+from shared.constants import APP_VERSION, GITHUB_REPO
+from shared.platform_utils import ask_yes_no, notify, open_path
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ def _is_newer(latest: str, current: str) -> bool:
 def check_for_update(notify_if_current: bool = False) -> None:
     if not GITHUB_REPO:
         if notify_if_current:
-            messagebox.showinfo(APP_NAME, "Updates are not configured for this build.")
+            notify("Updates are not configured for this build.")
         return
 
     try:
@@ -42,7 +41,7 @@ def check_for_update(notify_if_current: bool = False) -> None:
     except requests.RequestException as exc:
         log.warning("Update check failed: %s", exc)
         if notify_if_current:
-            messagebox.showerror(APP_NAME, f"Could not check for updates:\n{exc}")
+            notify(f"Could not check for updates:\n{exc}", error=True)
         return
 
     latest = release.get("tag_name", "")
@@ -51,11 +50,9 @@ def check_for_update(notify_if_current: bool = False) -> None:
     log.info("Update check: current=%s latest=%s", APP_VERSION, latest)
 
     if latest and _is_newer(latest, APP_VERSION):
-        if messagebox.askyesno(
-            APP_NAME, f"Version {latest} is available.\nOpen the download page?"
-        ):
-            os.startfile(release_url)
+        if ask_yes_no(f"Version {latest} is available.\nOpen the download page?"):
+            open_path(release_url)
         return
 
     if notify_if_current:
-        messagebox.showinfo(APP_NAME, f"You are up to date (v{APP_VERSION}).")
+        notify(f"You are up to date (v{APP_VERSION}).")

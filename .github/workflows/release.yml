@@ -44,6 +44,9 @@ jobs:
 
       - name: Build app bundle + DMG
         run: bash macos/build.sh
+        env:
+          CODESIGN_CERT_P12_BASE64: ${{ secrets.CODESIGN_CERT_P12_BASE64 }}
+          CODESIGN_CERT_PASSWORD: ${{ secrets.CODESIGN_CERT_PASSWORD }}
 
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4

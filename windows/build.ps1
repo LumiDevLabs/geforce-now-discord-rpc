@@ -1,9 +1,9 @@
 $ErrorActionPreference = "Stop"
 
-$Root   = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Root   = Split-Path -Parent $ScriptDir
 $Icon   = Join-Path $Root "assets\app.ico"
-$Venv   = Join-Path $Root ".venv"
-$Python = Join-Path $Venv "Scripts\python.exe"
+$Python = Join-Path $Root ".venv\Scripts\python.exe"
 $Dist   = Join-Path $Root "dist"
 $Build  = Join-Path $Root "build\nuitka"
 
@@ -12,8 +12,10 @@ if (!(Test-Path -LiteralPath $Icon)) {
 }
 
 # --- install dependencies via uv ---
+Push-Location $Root
 uv sync
 uv pip install nuitka
+Pop-Location
 
 # --- compile with Nuitka ---
 if (!(Test-Path -LiteralPath $Dist)) {
@@ -27,6 +29,8 @@ if (!(Test-Path -LiteralPath $Dist)) {
     --windows-console-mode=disable `
     --windows-icon-from-ico=$Icon `
     --enable-plugin=tk-inter `
+    --include-package=shared `
+    --include-package=windows `
     --include-data-files="$Icon=assets/app.ico" `
     --output-dir=$Build `
     --output-filename="GFN Discord RPC.exe" `
@@ -52,7 +56,7 @@ foreach ($Path in @(
 }
 
 if ($Inno) {
-    & $Inno (Join-Path $Root "installer.iss")
+    & $Inno (Join-Path $ScriptDir "installer.iss")
     Write-Host "Built: installer\GFNDiscordRPCSetup.exe" -ForegroundColor Green
 } else {
     Write-Host "Inno Setup not found - skipping installer. Install Inno Setup 6 to build the installer." -ForegroundColor Yellow

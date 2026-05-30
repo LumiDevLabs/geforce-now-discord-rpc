@@ -1,5 +1,5 @@
 #define MyAppName "GFN Discord RPC"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "GFN Discord RPC"
 #define MyAppExeName "GFN Discord RPC.exe"
 
@@ -12,9 +12,9 @@ DefaultDirName={localappdata}\Programs\{#MyAppName}
 DisableDirPage=no
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=installer
+OutputDir=..\installer
 OutputBaseFilename=GFNDiscordRPCSetup
-SetupIconFile=assets\app.ico
+SetupIconFile=..\assets\app.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -28,7 +28,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "autostart"; Description: "Start {#MyAppName} when I sign in"; GroupDescription: "Startup options:"; Flags: unchecked
 
 [Files]
-Source: "dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

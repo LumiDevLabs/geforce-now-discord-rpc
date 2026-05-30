@@ -1,37 +1,31 @@
 from __future__ import annotations
 
-import ctypes
 import logging
 import os
+import sys
 import threading
-from tkinter import messagebox
 
-from autostart import sync_autostart_command
-from config import load_config
-from constants import APP_DIR, APP_NAME, APP_RUN_VALUE, CONFIG_FILE, LOG_FILE
-from discord_rpc import RpcManager
-from game_detection import get_active_gfn_game
+from shared.config import load_config
+from shared.constants import (
+    APP_DIR,
+    APP_NAME,
+    APP_RUN_VALUE,
+    CONFIG_FILE,
+    IS_MACOS,
+    IS_WINDOWS,
+    LOG_FILE,
+    SECRETS_FILE,
+    SECRET_KEYS,
+)
+from shared.discord_rpc import RpcManager
+from shared.platform_utils import ensure_secrets_file, load_secrets, notify, open_path
 
-_MUTEX_NAME = f"Global\\{APP_RUN_VALUE}_SingleInstance"
-_mutex_handle: int | None = None
-
-
-def _acquire_single_instance() -> bool:
-    """Create a named mutex to ensure only one instance runs at a time.
-
-    Returns True if this is the first instance, False if another is already running.
-    The mutex handle is kept alive in _mutex_handle for the lifetime of the process.
-    """
-    global _mutex_handle
-    ERROR_ALREADY_EXISTS = 183
-
-    handle = ctypes.windll.kernel32.CreateMutexW(None, True, _MUTEX_NAME)
-    if ctypes.windll.kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
-        ctypes.windll.kernel32.CloseHandle(handle)
-        return False
-
-    _mutex_handle = handle
-    return True
+if IS_WINDOWS:
+    from windows import autostart, game_detection, tray
+elif IS_MACOS:
+    from macos import autostart, game_detection, tray
+else:
+    raise RuntimeError(f"Unsupported platform: {sys.platform}")
 
 APP_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
@@ -41,31 +35,61 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+_MUTEX_NAME = f"Global\\{APP_RUN_VALUE}_SingleInstance"
+_mutex_handle: int | None = None
+_lock_file = None
 
-def _check_env_vars() -> bool:
-    """Warn and exit if required environment variables are missing."""
-    missing = [
-        name for name in ("GFN_DISCORD_CLIENT_ID", "GFN_STEAMGRIDDB_API_KEY", "GFN_IMGBB_API_KEY")
-        if not os.environ.get(name)
-    ]
+
+def _acquire_single_instance() -> bool:
+    # Windows uses a named mutex; macOS/Linux use an exclusive flock on a lock
+    # file. The handle is intentionally kept alive for the lifetime of the process.
+    global _mutex_handle, _lock_file
+
+    if IS_WINDOWS:
+        import ctypes
+
+        ERROR_ALREADY_EXISTS = 183
+        handle = ctypes.windll.kernel32.CreateMutexW(None, True, _MUTEX_NAME)
+        if ctypes.windll.kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return False
+        _mutex_handle = handle
+        return True
+
+    import fcntl
+
+    lock_path = APP_DIR / "instance.lock"
+    handle = open(lock_path, "w")
+    try:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        handle.close()
+        return False
+    _lock_file = handle
+    return True
+
+
+def _check_secrets() -> bool:
+    # Credentials come from env vars or secrets.json. On macOS, GUI/LaunchAgent
+    # apps don't inherit shell env vars, so the file is the primary path.
+    missing = [name for name in SECRET_KEYS if not os.environ.get(name)]
     if not missing:
         return True
 
+    ensure_secrets_file()
     names = "\n".join(f"  - {n}" for n in missing)
-    messagebox.showerror(
-        APP_NAME,
-        f"Missing required system environment variables:\n\n"
+    notify(
+        f"Missing required credentials:\n\n"
         f"{names}\n\n"
-        f"Set them in Windows (Win + S → search \"environment variables\" →\n"
-        f"Edit environment variables for your account),\n"
-        f"then restart the app.",
+        f"Add them to:\n{SECRETS_FILE}\n\n"
+        f"(or set them as environment variables), then restart the app.",
+        error=True,
     )
+    open_path(SECRETS_FILE)
     return False
 
 
 class RpcService:
-    """Background service that polls for GFN games and updates Discord presence."""
-
     def __init__(self) -> None:
         self.config = load_config()
         self._config_mtime = self._get_config_mtime()
@@ -110,7 +134,7 @@ class RpcService:
             try:
                 with self._lock:
                     self._maybe_reload_config()
-                    game = get_active_gfn_game()
+                    game = game_detection.get_active_gfn_game()
 
                     if game:
                         self._manager.update_presence(game)
@@ -129,20 +153,20 @@ class RpcService:
 
 
 def main() -> None:
+    load_secrets()
+
     if not _acquire_single_instance():
-        messagebox.showinfo(APP_NAME, f"{APP_NAME} is already running in the system tray.")
+        location = "menu bar" if IS_MACOS else "system tray"
+        notify(f"{APP_NAME} is already running in the {location}.")
         return
 
-    if not _check_env_vars():
+    if not _check_secrets():
         return
 
-    sync_autostart_command()
+    autostart.sync_autostart_command()
 
     service = RpcService()
-
-    from tray import TrayApp
-
-    app = TrayApp(service)
+    app = tray.TrayApp(service)
     app.run()
 
 
