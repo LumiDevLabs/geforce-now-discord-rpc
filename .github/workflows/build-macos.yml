@@ -20,10 +20,6 @@ jobs:
       - name: Build app bundle + DMG
         run: bash macos/build.sh
         env:
-          # Store the base64-encoded p12 and its password as repository secrets.
-          # Generate them once with: bash macos/generate-signing-cert.sh
-          # Then add CODESIGN_CERT_P12_BASE64 and CODESIGN_CERT_PASSWORD under
-          # Settings → Secrets and variables → Actions.
           CODESIGN_CERT_P12_BASE64: ${{ secrets.CODESIGN_CERT_P12_BASE64 }}
           CODESIGN_CERT_PASSWORD: ${{ secrets.CODESIGN_CERT_PASSWORD }}
 
