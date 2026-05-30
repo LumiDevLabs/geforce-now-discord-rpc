@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 
-from constants import APP_DIR, CONFIG_FILE, DEFAULT_CONFIG
+from shared.constants import APP_DIR, CONFIG_FILE, DEFAULT_CONFIG
 
 log = logging.getLogger(__name__)
 

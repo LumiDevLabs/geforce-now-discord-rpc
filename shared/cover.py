@@ -10,15 +10,20 @@ import re
 import requests
 from PIL import Image
 
-from constants import CACHE_FILE, DEFAULT_CONFIG
+from shared.constants import CACHE_FILE, DEFAULT_CONFIG
 
 log = logging.getLogger(__name__)
 
-STEAMGRIDDB_API_KEY = os.environ.get("GFN_STEAMGRIDDB_API_KEY", "")
 STEAMGRIDDB_BASE = "https://www.steamgriddb.com/api/v2"
-
-IMGBB_API_KEY = os.environ.get("GFN_IMGBB_API_KEY", "")
 IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload"
+
+
+def _steamgriddb_key() -> str:
+    return os.environ.get("GFN_STEAMGRIDDB_API_KEY", "")
+
+
+def _imgbb_key() -> str:
+    return os.environ.get("GFN_IMGBB_API_KEY", "")
 
 DISCORD_SUPPORTED = frozenset({"png", "jpg", "jpeg", "gif", "webp"})
 
@@ -112,7 +117,8 @@ def _to_png_bytes(raw: bytes) -> bytes:
 
 def _upload_to_imgbb(image_bytes: bytes, name: str) -> str | None:
     """Upload raw image bytes to imgbb and return the permanent display URL."""
-    if not IMGBB_API_KEY:
+    imgbb_key = _imgbb_key()
+    if not imgbb_key:
         log.warning("GFN_IMGBB_API_KEY not set, skipping imgbb upload")
         return None
 
@@ -120,7 +126,7 @@ def _upload_to_imgbb(image_bytes: bytes, name: str) -> str | None:
     try:
         resp = requests.post(
             IMGBB_UPLOAD_URL,
-            data={"key": IMGBB_API_KEY, "name": name, "image": b64},
+            data={"key": imgbb_key, "name": name, "image": b64},
             timeout=20,
         )
         resp.raise_for_status()
@@ -161,7 +167,7 @@ def _download_and_upload(source_url: str, game_name: str) -> str | None:
 
 def _search_steamgriddb(game_name: str) -> int | None:
     """Return the SteamGridDB game ID for the best autocomplete match."""
-    headers = {"Authorization": f"Bearer {STEAMGRIDDB_API_KEY}"}
+    headers = {"Authorization": f"Bearer {_steamgriddb_key()}"}
     try:
         resp = requests.get(
             f"{STEAMGRIDDB_BASE}/search/autocomplete/{game_name}",
@@ -183,7 +189,7 @@ def _search_steamgriddb(game_name: str) -> int | None:
 
 def _fetch_steamgriddb_url(game_id: int, endpoint: str) -> str | None:
     """Return the first image URL from a SteamGridDB endpoint for a game."""
-    headers = {"Authorization": f"Bearer {STEAMGRIDDB_API_KEY}"}
+    headers = {"Authorization": f"Bearer {_steamgriddb_key()}"}
     try:
         resp = requests.get(
             f"{STEAMGRIDDB_BASE}/{endpoint}/game/{game_id}",
@@ -224,7 +230,7 @@ def _resolve_image_url(game_name: str) -> str | None:
     Tries the normalized (base) game name first for better search accuracy,
     then falls back to the full title if the names differ.
     """
-    if not STEAMGRIDDB_API_KEY:
+    if not _steamgriddb_key():
         log.warning("GFN_STEAMGRIDDB_API_KEY not set, skipping artwork lookup")
         return None
 

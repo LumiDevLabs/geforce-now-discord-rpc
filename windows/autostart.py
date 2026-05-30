@@ -8,7 +8,7 @@ import sys
 import winreg
 from pathlib import Path
 
-from constants import APP_RUN_VALUE, RUN_KEY
+from shared.constants import APP_RUN_VALUE, RUN_KEY
 
 log = logging.getLogger(__name__)
 

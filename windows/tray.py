@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
@@ -9,18 +8,20 @@ from tkinter import messagebox, ttk
 import pystray
 from PIL import Image, ImageDraw
 
-from autostart import is_autostart_enabled, set_autostart
-from config import load_config, save_config
-from constants import (
+from windows.autostart import is_autostart_enabled, set_autostart
+from shared.config import load_config, save_config
+from shared.constants import (
     ACTIVITY_TYPES,
     APP_NAME,
     APP_VERSION,
     CONFIG_FILE,
     DEFAULT_CONFIG,
     LOG_FILE,
+    SECRETS_FILE,
     resource_path,
 )
-from updater import check_for_update
+from shared.platform_utils import open_path
+from shared.updater import check_for_update
 
 log = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ class ConfigEditor:
 
         ttk.Button(
             btn_frame, text="Open JSON",
-            command=lambda: os.startfile(CONFIG_FILE),
+            command=lambda: open_path(CONFIG_FILE),
         ).grid(row=0, column=0, padx=(0, 8))
         ttk.Button(btn_frame, text="Save", command=save).grid(row=0, column=1, padx=(0, 8))
         ttk.Button(btn_frame, text="Close", command=root.destroy).grid(row=0, column=2)
@@ -147,8 +148,9 @@ class TrayApp:
     def _menu(self) -> pystray.Menu:
         return pystray.Menu(
             pystray.MenuItem("Edit Settings", lambda *_: self._editor.open()),
-            pystray.MenuItem("Open Config JSON", lambda *_: os.startfile(CONFIG_FILE)),
-            pystray.MenuItem("Open Logs", lambda *_: os.startfile(LOG_FILE)),
+            pystray.MenuItem("Open Config JSON", lambda *_: open_path(CONFIG_FILE)),
+            pystray.MenuItem("Edit Secrets", lambda *_: open_path(SECRETS_FILE)),
+            pystray.MenuItem("Open Logs", lambda *_: open_path(LOG_FILE)),
             pystray.MenuItem("Check for Updates", self._on_check_updates),
             pystray.MenuItem(
                 "Start with Windows",

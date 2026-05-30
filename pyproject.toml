@@ -8,4 +8,6 @@ dependencies = [
     "pypresence>=4.3.0",
     "pystray>=0.19.5",
     "requests>=2.31.0",
+    "pyobjc-framework-Cocoa>=10.0; sys_platform == 'darwin'",
+    "pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'",
 ]

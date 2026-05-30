@@ -6,7 +6,7 @@ from ctypes import wintypes
 
 import psutil
 
-from constants import GFN_IGNORED_TITLES, GFN_PROCESS_NAMES, GFN_TITLE_SUFFIXES
+from shared.constants import GFN_IGNORED_TITLES, GFN_PROCESS_NAMES, clean_game_name
 
 log = logging.getLogger(__name__)
 
@@ -20,18 +20,6 @@ _IsWindowVisible = _user32.IsWindowVisible
 _ENUM_WINDOWS_PROC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, ctypes.c_void_p)
 _user32.EnumWindows.argtypes = [_ENUM_WINDOWS_PROC, wintypes.LPARAM]
 _user32.EnumWindows.restype = wintypes.BOOL
-
-
-def clean_game_name(title: str) -> str:
-    """Strip GeForce NOW suffixes from a window title."""
-    if not title:
-        return ""
-    cleaned = title.strip()
-    lowered = cleaned.lower()
-    for suffix in GFN_TITLE_SUFFIXES:
-        if lowered.endswith(suffix):
-            return cleaned[: -len(suffix)].strip()
-    return cleaned
 
 
 def _get_gfn_pids() -> list[int]:
