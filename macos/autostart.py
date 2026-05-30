@@ -13,9 +13,24 @@ log = logging.getLogger(__name__)
 PLIST_PATH = Path.home() / "Library" / "LaunchAgents" / f"{BUNDLE_ID}.plist"
 
 
-def _program_arguments() -> list[str]:
+def _app_bundle_path() -> Path | None:
+    """Return the enclosing .app bundle for the running executable, if any."""
     exe = Path(sys.executable).resolve()
-    if ".app/Contents/MacOS" in str(exe) or getattr(sys, "frozen", False):
+    for parent in exe.parents:
+        if parent.suffix == ".app":
+            return parent
+    return None
+
+
+def _program_arguments() -> list[str]:
+    bundle = _app_bundle_path()
+    if bundle is not None:
+        # Launch through LaunchServices (like a double-click) instead of exec'ing
+        # the raw binary directly. This gives the app a full Aqua GUI session at
+        # login, so its menu-bar (NSStatusItem) icon registers reliably.
+        return ["/usr/bin/open", str(bundle)]
+    exe = Path(sys.executable).resolve()
+    if getattr(sys, "frozen", False):
         return [str(exe)]
     main_py = Path(__file__).resolve().parent.parent / "main.py"
     return [str(exe), str(main_py)]
