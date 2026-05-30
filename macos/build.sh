@@ -9,6 +9,7 @@ ASSETS="$ROOT/assets"
 DIST="$ROOT/dist"
 BUILD="$ROOT/build/nuitka"
 APP_NAME="GFN Discord RPC"
+BUNDLE_ID="com.lumidevlabs.gfndiscordrpc"
 APP_BUNDLE="$DIST/$APP_NAME.app"
 ARCH="$(uname -m)"
 DMG_PATH="$DIST/GFN-Discord-RPC-$ARCH.dmg"
@@ -74,6 +75,18 @@ if [[ ! -d "$BUILT_APP" ]]; then
 fi
 cp -R "$BUILT_APP" "$APP_BUNDLE"
 echo "Built: $APP_BUNDLE"
+
+# --- ad-hoc code signing ---
+# Sign with the ad-hoc identity ("-"): no Apple account or certificate required.
+# On Apple Silicon every binary must carry a valid signature to execute at all,
+# so we re-sign the finished bundle (including the dylibs Nuitka bundles) to make
+# sure copying/packaging didn't invalidate anything.  Pinning the bundle
+# identifier keeps the code identity consistent.  This does NOT bypass Gatekeeper
+# (users still "Open Anyway" once) and is no substitute for Developer ID
+# notarization, which is the only thing that fully removes the first-launch
+# warning and reliably preserves TCC permissions across updates.
+codesign --force --deep --sign - --identifier "$BUNDLE_ID" "$APP_BUNDLE"
+codesign --verify --verbose=2 "$APP_BUNDLE" || echo "warning: codesign verification reported issues" >&2
 
 # --- package into a .dmg ---
 rm -f "$DMG_PATH"

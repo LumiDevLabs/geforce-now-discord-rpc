@@ -23,7 +23,6 @@ _user32.EnumWindows.restype = wintypes.BOOL
 
 
 def _get_gfn_pids() -> list[int]:
-    """Find PIDs of running GeForce NOW processes."""
     pids = []
     for proc in psutil.process_iter(["pid", "name"]):
         try:
@@ -36,7 +35,6 @@ def _get_gfn_pids() -> list[int]:
 
 
 def _get_window_titles(pids: list[int]) -> list[str]:
-    """Enumerate visible window titles belonging to the given PIDs."""
     pid_set = set(pids)
     titles: list[str] = []
 
@@ -59,7 +57,6 @@ def _get_window_titles(pids: list[int]) -> list[str]:
 
 
 def get_active_gfn_game() -> str | None:
-    """Detect the currently active GeForce NOW game, or None if not streaming."""
     pids = _get_gfn_pids()
     if not pids:
         return None

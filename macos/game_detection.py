@@ -26,7 +26,6 @@ def _matches_gfn(name: str) -> bool:
 
 
 def _get_gfn_pids() -> list[int]:
-    """Find PIDs of running GeForce NOW processes."""
     pids = []
     for proc in psutil.process_iter(["pid", "name"]):
         try:
@@ -39,11 +38,7 @@ def _get_gfn_pids() -> list[int]:
 
 
 def _get_window_titles(pids: list[int]) -> list[str]:
-    """Enumerate on-screen window titles for the given PIDs using Quartz.
-
-    ``kCGWindowName`` is only populated when the app has been granted the
-    Screen Recording permission (macOS 10.15+).
-    """
+    # kCGWindowName is only populated when Screen Recording permission is granted (macOS 10.15+).
     global _warned_no_titles
 
     try:
@@ -90,7 +85,6 @@ def _get_window_titles(pids: list[int]) -> list[str]:
 
 
 def get_active_gfn_game() -> str | None:
-    """Detect the currently active GeForce NOW game, or None if not streaming."""
     pids = _get_gfn_pids()
     if not pids:
         return None

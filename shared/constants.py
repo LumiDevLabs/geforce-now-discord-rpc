@@ -13,7 +13,6 @@ IS_WINDOWS = sys.platform == "win32"
 
 
 def _app_dir() -> Path:
-    """Per-user data directory for config, cache, logs, and secrets."""
     if IS_WINDOWS:
         return Path(os.getenv("APPDATA", Path.home())) / APP_NAME
     if IS_MACOS:
@@ -79,7 +78,6 @@ GFN_TITLE_SUFFIXES = (
 
 
 def clean_game_name(title: str) -> str:
-    """Strip GeForce NOW suffixes from a window title."""
     if not title:
         return ""
     cleaned = title.strip()
@@ -91,13 +89,8 @@ def clean_game_name(title: str) -> str:
 
 
 def resource_path(relative_path: str) -> Path:
-    """Resolve a path relative to the app bundle (PyInstaller/Nuitka) or source root.
-
-    For a Nuitka standalone build the data files live next to the compiled
-    module, so ``__file__``'s parent resolves correctly.  ``_MEIPASS`` covers
-    PyInstaller onefile.  We also check the source-tree root since this module
-    now lives under ``shared/``.
-    """
+    # _MEIPASS is set by PyInstaller onefile. For Nuitka standalone, __file__
+    # resolves correctly. We also check the source root since this lives under shared/.
     meipass = getattr(sys, "_MEIPASS", None)
     if meipass:
         return Path(meipass) / relative_path

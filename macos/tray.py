@@ -34,12 +34,8 @@ def _load_icon() -> Image.Image:
 
 
 class TrayApp:
-    """macOS menu-bar application that owns the service lifecycle.
-
-    Settings are edited by opening ``config.json`` in the default editor; the
-    background service auto-reloads it on change.  This avoids running Tkinter
-    off the main thread, which is unsafe alongside pystray's NSApplication.
-    """
+    # Settings are edited by opening config.json in the default editor.
+    # Avoids running Tkinter off the main thread, which is unsafe with pystray's NSApplication.
 
     def __init__(self, service) -> None:
         self._service = service

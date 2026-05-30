@@ -20,7 +20,7 @@ from shared.constants import (
     SECRETS_FILE,
     resource_path,
 )
-from shared.platform_utils import open_path
+from shared.platform_utils import notify, open_path
 from shared.updater import check_for_update
 
 log = logging.getLogger(__name__)
@@ -39,8 +39,6 @@ def _load_icon() -> Image.Image:
 
 
 class ConfigEditor:
-    """Tkinter settings window that opens in its own thread."""
-
     def __init__(self, on_saved: callable):
         self._on_saved = on_saved
         self._thread: threading.Thread | None = None
@@ -137,8 +135,6 @@ class ConfigEditor:
 
 
 class TrayApp:
-    """System tray application that owns the service lifecycle."""
-
     def __init__(self, service) -> None:
         self._service = service
         self._editor = ConfigEditor(on_saved=service.reload_config)
@@ -163,7 +159,7 @@ class TrayApp:
 
     def _on_toggle_autostart(self, *_) -> None:
         if not set_autostart(not is_autostart_enabled()):
-            messagebox.showerror(APP_NAME, "Could not update auto-start setting.")
+            notify("Could not update auto-start setting.", error=True)
         self._icon.update_menu()
 
     def _on_check_updates(self, *_) -> None:

@@ -14,8 +14,6 @@ PLIST_PATH = Path.home() / "Library" / "LaunchAgents" / f"{BUNDLE_ID}.plist"
 
 
 def _program_arguments() -> list[str]:
-    # Build the launchd ProgramArguments for the current install.
-
     exe = Path(sys.executable).resolve()
     if ".app/Contents/MacOS" in str(exe) or getattr(sys, "frozen", False):
         return [str(exe)]
@@ -93,7 +91,7 @@ def set_autostart(enabled: bool) -> bool:
 
 
 def sync_autostart_command() -> None:
-    """Repair the LaunchAgent plist if it points to a stale executable path."""
+    # Repair the plist if it points to a stale executable path after an update.
     data = _read_plist()
     if not data:
         return

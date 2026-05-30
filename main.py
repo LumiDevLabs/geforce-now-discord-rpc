@@ -41,12 +41,8 @@ _lock_file = None
 
 
 def _acquire_single_instance() -> bool:
-    """Ensure only one instance runs at a time.
-
-    Windows uses a named mutex; macOS/Linux use an exclusive ``flock`` on a
-    lock file in the app data directory.  The handle is kept alive for the
-    lifetime of the process.
-    """
+    # Windows uses a named mutex; macOS/Linux use an exclusive flock on a lock
+    # file. The handle is intentionally kept alive for the lifetime of the process.
     global _mutex_handle, _lock_file
 
     if IS_WINDOWS:
@@ -74,12 +70,8 @@ def _acquire_single_instance() -> bool:
 
 
 def _check_secrets() -> bool:
-    """Warn and exit if required credentials are missing.
-
-    Credentials may come from OS environment variables (the original Windows
-    workflow) or from ``secrets.json`` in the app data directory.  On macOS,
-    GUI apps don't inherit shell env vars, so the file is the primary path.
-    """
+    # Credentials come from env vars or secrets.json. On macOS, GUI/LaunchAgent
+    # apps don't inherit shell env vars, so the file is the primary path.
     missing = [name for name in SECRET_KEYS if not os.environ.get(name)]
     if not missing:
         return True
@@ -98,8 +90,6 @@ def _check_secrets() -> bool:
 
 
 class RpcService:
-    """Background service that polls for GFN games and updates Discord presence."""
-
     def __init__(self) -> None:
         self.config = load_config()
         self._config_mtime = self._get_config_mtime()

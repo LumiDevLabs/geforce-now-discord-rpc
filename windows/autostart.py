@@ -16,7 +16,6 @@ PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 
 
 def _get_process_exe(pid: int) -> Path | None:
-    """Return the executable path for a given PID using the Win32 API."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle:
@@ -32,12 +31,9 @@ def _get_process_exe(pid: int) -> Path | None:
 
 
 def _get_executable_path() -> Path | None:
-    """Get the real executable path for Nuitka onefile or PyInstaller.
-
-    Nuitka onefile extracts to a random temp directory each launch, so
-    GetModuleFileNameW returns a stale path.  Instead we look up the
-    bootstrapper via NUITKA_ONEFILE_PARENT and query its image path.
-    """
+    # Nuitka onefile extracts to a random temp dir each launch, so
+    # GetModuleFileNameW returns a stale path. Use NUITKA_ONEFILE_PARENT
+    # to find the bootstrapper's real path instead.
     parent_pid = os.environ.get("NUITKA_ONEFILE_PARENT")
     if parent_pid is not None:
         try:
@@ -100,7 +96,7 @@ def set_autostart(enabled: bool) -> bool:
 
 
 def sync_autostart_command() -> None:
-    """Repair the registry entry if it points to a stale path (e.g. old Nuitka temp)."""
+    # Repair the registry entry if it points to a stale path (e.g. old Nuitka temp).
     if _get_executable_path() is None:
         return
 
