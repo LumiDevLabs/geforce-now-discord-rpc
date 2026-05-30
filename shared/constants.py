@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 APP_NAME = "GFN Discord RPC"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.2.0"
 GITHUB_REPO = "LumiDevLabs/geforce-now-discord-rpc"
 APP_RUN_VALUE = "GFNDiscordRPC"
 BUNDLE_ID = "com.lumidevlabs.gfndiscordrpc"
