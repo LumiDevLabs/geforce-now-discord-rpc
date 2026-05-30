@@ -1,4 +1,4 @@
-p align="center">
+<p align="center">
   <img width="256" height="256" alt="GFN Discord RPC" src="https://i.ibb.co/0RDZx9Jb/khgjghgh.webp" />
 </p>
 
