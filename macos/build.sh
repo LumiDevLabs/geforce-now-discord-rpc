@@ -24,6 +24,7 @@ if [[ ! -f "$PNG_ICON" ]]; then
 fi
 
 # --- install dependencies via uv ---
+uv python pin 3.13
 uv sync
 uv pip install nuitka
 # PyObjC frameworks needed for tray (pystray darwin backend) and window detection.
@@ -56,7 +57,6 @@ rm -rf "$APP_BUNDLE"
     --macos-app-icon="$ICNS_ICON" \
     --macos-app-mode=ui-element \
     --macos-app-name="$APP_NAME" \
-    --enable-plugin=tk-inter \
     --include-package=shared \
     --include-package=macos \
     --include-package=pystray \
