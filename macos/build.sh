@@ -76,16 +76,132 @@ fi
 cp -R "$BUILT_APP" "$APP_BUNDLE"
 echo "Built: $APP_BUNDLE"
 
-# --- ad-hoc code signing ---
-# Sign with the ad-hoc identity ("-"): no Apple account or certificate required.
-# On Apple Silicon every binary must carry a valid signature to execute at all,
-# so we re-sign the finished bundle (including the dylibs Nuitka bundles) to make
-# sure copying/packaging didn't invalidate anything.  Pinning the bundle
-# identifier keeps the code identity consistent.  This does NOT bypass Gatekeeper
-# (users still "Open Anyway" once) and is no substitute for Developer ID
-# notarization, which is the only thing that fully removes the first-launch
-# warning and reliably preserves TCC permissions across updates.
-codesign --force --deep --sign - --identifier "$BUNDLE_ID" "$APP_BUNDLE"
+# --- code signing ---
+# macOS TCC permissions (Screen Recording) are tied to the app's code-signing
+# identity - specifically its cdhash.  The ad-hoc identity ("-") hashes the
+# binary bytes, so every new build produces a new identity and silently breaks
+# any existing Screen Recording grant for users who already installed the app.
+#
+# The fix: sign every build with the *same* persistent certificate so the
+# identity is stable across releases.  Priority order:
+#
+#  1. CI (GitHub Actions): CODESIGN_CERT_P12_BASE64 + CODESIGN_CERT_PASSWORD
+#     secrets → imported into a temp keychain each run.  Generate the p12 once
+#     locally (see README) and store it as a repository secret.
+#
+#  2. Local dev: a persistent self-signed cert in ~/.gfn-discord-rpc-signing/,
+#     generated once on first build and reused forever.
+#
+#  3. Fallback: ad-hoc ("-") if neither is available.  TCC will break on every
+#     build in this case; avoid if at all possible.
+
+SIGN_IDENTITY=""
+SIGN_KEYCHAIN_ARGS=()
+_TEMP_KEYCHAIN=""
+
+_cleanup_temp_keychain() {
+    if [[ -n "$_TEMP_KEYCHAIN" && -f "$_TEMP_KEYCHAIN" ]]; then
+        security delete-keychain "$_TEMP_KEYCHAIN" 2>/dev/null || true
+    fi
+}
+trap _cleanup_temp_keychain EXIT
+
+# --- path 1: CI secrets ---
+if [[ -n "${CODESIGN_CERT_P12_BASE64:-}" && -n "${CODESIGN_CERT_PASSWORD:-}" ]]; then
+    echo "Importing signing identity from CI secrets..."
+    _TEMP_KEYCHAIN="$(mktemp).keychain-db"
+    _TMP_P12="$(mktemp).p12"
+    printf '%s' "$CODESIGN_CERT_P12_BASE64" | base64 --decode > "$_TMP_P12"
+
+    security create-keychain -p "ci-temp" "$_TEMP_KEYCHAIN"
+    security set-keychain-settings "$_TEMP_KEYCHAIN"   # disable auto-lock
+    security unlock-keychain -p "ci-temp" "$_TEMP_KEYCHAIN"
+    security import "$_TMP_P12" -k "$_TEMP_KEYCHAIN" \
+        -P "$CODESIGN_CERT_PASSWORD" -T /usr/bin/codesign -A
+    security set-key-partition-list -S apple-tool:,apple:,codesign: \
+        -s -k "ci-temp" "$_TEMP_KEYCHAIN" >/dev/null 2>&1 || true
+    rm -f "$_TMP_P12"
+
+    # Add to search list so codesign can find the identity by name.
+    _existing_keychains="$(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/"//g')"
+    security list-keychains -d user -s "$_TEMP_KEYCHAIN" $_existing_keychains || true
+
+    SIGN_IDENTITY="$(security find-identity -v -p codesigning "$_TEMP_KEYCHAIN" \
+        | awk -F'"' 'NR==1{print $2}')"
+    SIGN_KEYCHAIN_ARGS=(--keychain "$_TEMP_KEYCHAIN")
+fi
+
+# --- path 2: local persistent self-signed cert ---
+if [[ -z "$SIGN_IDENTITY" ]]; then
+    _SIGN_DIR="$HOME/.gfn-discord-rpc-signing"
+    _LOCAL_KEYCHAIN="$_SIGN_DIR/signing.keychain-db"
+    _LOCAL_P12="$_SIGN_DIR/identity.p12"
+    _LOCAL_CN="GFN Discord RPC"
+    _LOCAL_KW="gfn-discord-rpc"
+
+    _setup_local_cert() {
+        mkdir -p "$_SIGN_DIR"
+
+        if [[ ! -f "$_LOCAL_P12" ]]; then
+            echo "Creating persistent local signing identity (one-time setup)..."
+            local tmp; tmp="$(mktemp -d)"
+            cat > "$tmp/openssl.cnf" <<EOF
+[ req ]
+distinguished_name = dn
+x509_extensions = v3
+prompt = no
+[ dn ]
+CN = $_LOCAL_CN
+[ v3 ]
+basicConstraints = critical,CA:false
+keyUsage = critical,digitalSignature
+extendedKeyUsage = critical,codeSigning
+EOF
+            openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
+                -keyout "$tmp/key.pem" -out "$tmp/cert.pem" -config "$tmp/openssl.cnf"
+            openssl pkcs12 -export -inkey "$tmp/key.pem" -in "$tmp/cert.pem" \
+                -name "$_LOCAL_CN" -out "$_LOCAL_P12" -passout "pass:$_LOCAL_KW"
+            rm -rf "$tmp"
+        fi
+
+        if [[ ! -f "$_LOCAL_KEYCHAIN" ]]; then
+            security create-keychain -p "$_LOCAL_KW" "$_LOCAL_KEYCHAIN"
+        fi
+        security set-keychain-settings "$_LOCAL_KEYCHAIN"
+        security unlock-keychain -p "$_LOCAL_KW" "$_LOCAL_KEYCHAIN"
+
+        if ! security find-identity -v -p codesigning "$_LOCAL_KEYCHAIN" | grep -qF "$_LOCAL_CN"; then
+            security import "$_LOCAL_P12" -k "$_LOCAL_KEYCHAIN" \
+                -P "$_LOCAL_KW" -T /usr/bin/codesign -A
+            security set-key-partition-list -S apple-tool:,apple:,codesign: \
+                -s -k "$_LOCAL_KW" "$_LOCAL_KEYCHAIN" >/dev/null 2>&1 || true
+        fi
+
+        local existing
+        existing="$(security list-keychains -d user | sed -e 's/^[[:space:]]*//' -e 's/"//g')"
+        if ! printf '%s\n' "$existing" | grep -qF "$_LOCAL_KEYCHAIN"; then
+            security list-keychains -d user -s "$_LOCAL_KEYCHAIN" $existing || true
+        fi
+    }
+
+    _setup_local_cert || true
+    if security find-identity -v -p codesigning "$_LOCAL_KEYCHAIN" 2>/dev/null | grep -qF "$_LOCAL_CN"; then
+        SIGN_IDENTITY="$_LOCAL_CN"
+        SIGN_KEYCHAIN_ARGS=(--keychain "$_LOCAL_KEYCHAIN")
+    fi
+fi
+
+# --- path 3: ad-hoc fallback ---
+if [[ -z "$SIGN_IDENTITY" ]]; then
+    echo "warning: no persistent signing identity found - falling back to ad-hoc signing." >&2
+    echo "warning: Screen Recording permission will break for users on every update." >&2
+    SIGN_IDENTITY="-"
+fi
+
+echo "Signing with identity: $SIGN_IDENTITY"
+codesign --force --deep --sign "$SIGN_IDENTITY" \
+    ${SIGN_KEYCHAIN_ARGS[@]+"${SIGN_KEYCHAIN_ARGS[@]}"} \
+    --identifier "$BUNDLE_ID" "$APP_BUNDLE"
 codesign --verify --verbose=2 "$APP_BUNDLE" || echo "warning: codesign verification reported issues" >&2
 
 # --- package into a .dmg ---
