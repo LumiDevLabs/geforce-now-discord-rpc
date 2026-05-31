@@ -20,7 +20,7 @@ from shared.constants import (
     SECRETS_FILE,
     resource_path,
 )
-from shared.platform_utils import notify, open_path
+from shared.platform_utils import ensure_secrets_file, notify, open_path
 from shared.updater import check_for_update
 
 log = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class TrayApp:
         return pystray.Menu(
             pystray.MenuItem("Edit Settings", lambda *_: self._editor.open()),
             pystray.MenuItem("Open Config JSON", lambda *_: open_path(CONFIG_FILE)),
-            pystray.MenuItem("Edit Secrets", lambda *_: open_path(SECRETS_FILE)),
+            pystray.MenuItem("Edit Secrets", self._on_edit_secrets),
             pystray.MenuItem("Open Logs", lambda *_: open_path(LOG_FILE)),
             pystray.MenuItem("Check for Updates", self._on_check_updates),
             pystray.MenuItem(
@@ -156,6 +156,10 @@ class TrayApp:
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Close", self._on_close),
         )
+
+    def _on_edit_secrets(self, *_) -> None:
+        ensure_secrets_file()
+        open_path(SECRETS_FILE)
 
     def _on_toggle_autostart(self, *_) -> None:
         if not set_autostart(not is_autostart_enabled()):
