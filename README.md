@@ -94,7 +94,7 @@ No bot token or OAuth setup is needed.
 
 ### Adding optional keys
 
-Open `secrets.json` via **Edit Secrets** in the tray/menu-bar menu (or create it manually) and fill in only the keys you need — leave the rest as empty strings:
+Open `secrets.json` via **Edit Secrets** in the tray/menu-bar menu and fill in only the keys you need, leave the rest as empty strings:
 
 ```json
 {
