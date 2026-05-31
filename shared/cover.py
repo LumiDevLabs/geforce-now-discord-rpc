@@ -241,21 +241,26 @@ def _resolve_image_url(game_name: str) -> str | None:
 
 def get_game_artwork(game_name: str, default_image: str | None = None) -> dict:
     cache = _get_cache()
+    fallback = default_image or DEFAULT_CONFIG["default_image_url"]
 
     cached = cache.get(game_name)
-    if isinstance(cached, dict):
+    if isinstance(cached, dict) and cached.get("image_url") != fallback:
         log.debug("Cache hit for '%s'", game_name)
         return cached
 
     log.info("Looking up artwork for '%s'", game_name)
     image_url = _resolve_image_url(game_name)
-    fallback = default_image or DEFAULT_CONFIG["default_image_url"]
 
     result = {
         "image_url": image_url or fallback,
         "store_url": None,
     }
 
-    cache[game_name] = result
-    _save_cache(cache)
+    if image_url:
+        cache[game_name] = result
+        _save_cache(cache)
+    elif game_name in cache:
+        del cache[game_name]
+        _save_cache(cache)
+
     return result
