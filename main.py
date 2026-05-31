@@ -14,11 +14,9 @@ from shared.constants import (
     IS_MACOS,
     IS_WINDOWS,
     LOG_FILE,
-    SECRETS_FILE,
-    SECRET_KEYS,
 )
 from shared.discord_rpc import RpcManager
-from shared.platform_utils import ensure_secrets_file, load_secrets, notify, open_path
+from shared.platform_utils import load_secrets, notify
 
 if IS_WINDOWS:
     from windows import autostart, game_detection, tray
@@ -66,27 +64,7 @@ def _acquire_single_instance() -> bool:
         handle.close()
         return False
     _lock_file = handle
-    return True
-
-
-def _check_secrets() -> bool:
-    # Credentials come from env vars or secrets.json. On macOS, GUI/LaunchAgent
-    # apps don't inherit shell env vars, so the file is the primary path.
-    missing = [name for name in SECRET_KEYS if not os.environ.get(name)]
-    if not missing:
         return True
-
-    ensure_secrets_file()
-    names = "\n".join(f"  - {n}" for n in missing)
-    notify(
-        f"Missing required credentials:\n\n"
-        f"{names}\n\n"
-        f"Add them to:\n{SECRETS_FILE}\n\n"
-        f"(or set them as environment variables), then restart the app.",
-        error=True,
-    )
-    open_path(SECRETS_FILE)
-    return False
 
 
 class RpcService:
@@ -158,9 +136,6 @@ def main() -> None:
     if not _acquire_single_instance():
         location = "menu bar" if IS_MACOS else "system tray"
         notify(f"{APP_NAME} is already running in the {location}.")
-        return
-
-    if not _check_secrets():
         return
 
     autostart.sync_autostart_command()

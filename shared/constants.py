@@ -8,6 +8,9 @@ GITHUB_REPO = "LumiDevLabs/geforce-now-discord-rpc"
 APP_RUN_VALUE = "GFNDiscordRPC"
 BUNDLE_ID = "com.lumidevlabs.gfndiscordrpc"
 
+# Built-in Discord application — users don't need to create their own.
+DEFAULT_DISCORD_CLIENT_ID = "1504936563031805982"
+
 IS_MACOS = sys.platform == "darwin"
 IS_WINDOWS = sys.platform == "win32"
 
@@ -28,6 +31,10 @@ SECRETS_FILE = APP_DIR / "secrets.json"
 
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 
+# All three keys are optional — the app works out of the box without them.
+# GFN_DISCORD_CLIENT_ID overrides the built-in application ID.
+# GFN_STEAMGRIDDB_API_KEY + GFN_IMGBB_API_KEY enable per-game artwork; without
+# them the default image is used.
 SECRET_KEYS = (
     "GFN_DISCORD_CLIENT_ID",
     "GFN_STEAMGRIDDB_API_KEY",

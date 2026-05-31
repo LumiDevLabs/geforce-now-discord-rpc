@@ -4,13 +4,14 @@ import logging
 import os
 import time
 
+from shared.constants import DEFAULT_DISCORD_CLIENT_ID
 from shared.cover import get_game_artwork
 
 log = logging.getLogger(__name__)
 
 
 def _discord_client_id() -> str:
-    return os.environ.get("GFN_DISCORD_CLIENT_ID", "")
+    return os.environ.get("GFN_DISCORD_CLIENT_ID", "") or DEFAULT_DISCORD_CLIENT_ID
 
 
 def _resolve_activity_type(name: str):
@@ -34,9 +35,8 @@ class RpcManager:
         if self.connected:
             return True
         client_id = _discord_client_id()
-        if not client_id:
-            log.warning("DISCORD_CLIENT_ID not set, cannot connect")
-            return False
+        custom = bool(os.environ.get("GFN_DISCORD_CLIENT_ID", ""))
+        log.info("Connecting with %s client ID", "custom" if custom else "built-in")
 
         try:
             from pypresence import Presence

@@ -51,42 +51,60 @@ sudo xattr -cr "/Applications/GFN Discord RPC.app"
 
 On first launch, macOS may ask for **Screen Recording** permission. This is only used to read the GeForce NOW window title, not to record your screen. Enable it in **System Settings** → **Privacy & Security** → **Screen Recording**, then restart the app.
 
-## ⚙️ First Setup (~5 minutes)
+## ⚙️ First Setup
 
-The app needs three free keys for Discord status and game artwork. Launch the app once and it will create/open `secrets.json` for you.
+**No setup required.** The app uses a built-in Discord application and will show your game name with a default image right away. Just install and run.
 
-```json
-{
-    "GFN_DISCORD_CLIENT_ID": "your-discord-app-id",
-    "GFN_STEAMGRIDDB_API_KEY": "your-steamgriddb-key",
-    "GFN_IMGBB_API_KEY": "your-imgbb-key"
-}
-```
+All three keys below are **optional** — add them only if you want extra features.
 
-On Windows, the recommended option is to add these same three names as **user environment variables** instead. Search for **environment variables** in Windows, open **Edit environment variables for your account**, and add each key under **User variables**.
+<details>
+<summary><b>Optional: Enable per-game artwork (SteamGridDB + ImgBB)</b></summary>
 
-### Discord Client ID
+Without these keys the app shows a default GFN image for every game. Add both keys to fetch and display the actual game cover art.
 
-1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Create a new application.
-3. Copy the **Application ID** from **General Information**.
-4. Paste it as `GFN_DISCORD_CLIENT_ID`.
-
-No bot token or OAuth setup is needed. Just keep the Discord desktop app open while playing.
-
-### SteamGridDB API Key
+**SteamGridDB API Key**
 
 1. Sign in at [SteamGridDB](https://www.steamgriddb.com/).
 2. Open [steamgriddb.com/profile/preferences](https://www.steamgriddb.com/profile/preferences).
 3. Go to the **API** tab and copy/request your key.
-4. Paste it as `GFN_STEAMGRIDDB_API_KEY`.
+4. Add it as `GFN_STEAMGRIDDB_API_KEY`.
 
-### ImgBB API Key
+**ImgBB API Key**
 
 1. Open the [ImgBB API page](https://api.imgbb.com/).
 2. Sign in or create an account.
 3. Copy/create your API key.
-4. Paste it as `GFN_IMGBB_API_KEY`.
+4. Add it as `GFN_IMGBB_API_KEY`.
+
+</details>
+
+<details>
+<summary><b>Optional: Use your own Discord application</b></summary>
+
+By default the app registers your Discord status under the official GFN Discord RPC application. If you prefer your own Discord application name and icon, create one:
+
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Click **New Application** and give it a name.
+3. Copy the **Application ID** from **General Information**.
+4. Add it to `secrets.json` (see below) as `GFN_DISCORD_CLIENT_ID`.
+
+No bot token or OAuth setup is needed.
+
+</details>
+
+### Adding optional keys
+
+Open `secrets.json` via **Edit Secrets** in the tray/menu-bar menu (or create it manually) and fill in only the keys you need — leave the rest as empty strings:
+
+```json
+{
+    "GFN_DISCORD_CLIENT_ID": "",
+    "GFN_STEAMGRIDDB_API_KEY": "",
+    "GFN_IMGBB_API_KEY": ""
+}
+```
+
+On Windows you can also add these as **user environment variables**: search for **environment variables**, open **Edit environment variables for your account**, and add each key under **User variables**.
 
 ## 🖱️ App Menu
 
