@@ -64,7 +64,7 @@ def _acquire_single_instance() -> bool:
         handle.close()
         return False
     _lock_file = handle
-        return True
+    return True
 
 
 class RpcService:
