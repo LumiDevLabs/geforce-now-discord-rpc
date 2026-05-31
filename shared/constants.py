@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 APP_NAME = "GFN Discord RPC"
-APP_VERSION = "1.2.1"
+APP_VERSION = "1.2.2"
 GITHUB_REPO = "LumiDevLabs/geforce-now-discord-rpc"
 APP_RUN_VALUE = "GFNDiscordRPC"
 BUNDLE_ID = "com.lumidevlabs.gfndiscordrpc"
@@ -45,7 +45,7 @@ ACTIVITY_TYPES = ("PLAYING", "LISTENING", "WATCHING", "COMPETING")
 
 DEFAULT_CONFIG = {
     "check_interval_seconds": 15,
-    "default_image_url": "https://i.ibb.co/zWW3QqnT/default.png
+    "default_image_url": "https://i.ibb.co/zWW3QqnT/default.png",
     "activity_type": "PLAYING",
     "check_for_updates": True,
 }

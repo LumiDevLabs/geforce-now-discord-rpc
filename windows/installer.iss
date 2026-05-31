@@ -1,5 +1,5 @@
 #define MyAppName "GFN Discord RPC"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "GFN Discord RPC"
 #define MyAppExeName "GFN Discord RPC.exe"
 
