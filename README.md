@@ -111,6 +111,7 @@ On Windows you can also add these as **user environment variables**: search for 
 Right-click the tray/menu bar icon to access:
 
 - **`Edit Settings`** - Change app options.
+- **`Open Config JSON`** - Open `config.json` directly (Windows only).
 - **`Edit Secrets`** - Update API keys.
 - **`Open Logs`** - Open the log file.
 - **`Check for Updates`** - Check GitHub Releases manually.
@@ -131,7 +132,7 @@ macOS:
 ~/Library/Application Support/GFN Discord RPC/
 ```
 
-This folder contains `config.json`, `secrets.json`, and `app.log`.
+This folder contains `config.json`, `app.log`, and `image_cache.json`. A `secrets.json` file is created the first time you use **Edit Secrets** (or you can create it manually).
 
 ## 🔨 Build from Source
 
