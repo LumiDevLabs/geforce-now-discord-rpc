@@ -45,7 +45,7 @@ ACTIVITY_TYPES = ("PLAYING", "LISTENING", "WATCHING", "COMPETING")
 
 DEFAULT_CONFIG = {
     "check_interval_seconds": 15,
-    "default_image_url": "https://files.catbox.moe/61n0jc.png",
+    "default_image_url": "https://i.ibb.co/zWW3QqnT/default.png
     "activity_type": "PLAYING",
     "check_for_updates": True,
 }
