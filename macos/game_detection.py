@@ -53,7 +53,7 @@ def _get_window_titles(pids: list[int]) -> list[str]:
         return []
 
     pid_set = set(pids)
-    titles: list[str] = []
+    titled_windows: list[tuple[float, str]] = []
     owner_without_name = False
 
     options = kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements
@@ -65,11 +65,16 @@ def _get_window_titles(pids: list[int]) -> list[str]:
             continue
         name = window.get("kCGWindowName")
         if name:
-            titles.append(str(name))
+            bounds = window.get("kCGWindowBounds") or {}
+            try:
+                area = float(bounds.get("Width", 0)) * float(bounds.get("Height", 0))
+            except (AttributeError, TypeError, ValueError):
+                area = 0
+            titled_windows.append((area, str(name)))
         else:
             owner_without_name = True
 
-    if owner_without_name and not titles:
+    if owner_without_name and not titled_windows:
         if not _warned_no_titles:
             log.warning(
                 "GeForce NOW windows found but their titles are empty. Grant "
@@ -81,7 +86,8 @@ def _get_window_titles(pids: list[int]) -> list[str]:
     else:
         _warned_no_titles = False
 
-    return titles
+    titled_windows.sort(key=lambda item: item[0], reverse=True)
+    return [title for _, title in titled_windows]
 
 
 def get_active_gfn_game() -> str | None:
