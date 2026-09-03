@@ -46,7 +46,6 @@ def _get_window_titles(pids: list[int]) -> list[str]:
             CGWindowListCopyWindowInfo,
             kCGNullWindowID,
             kCGWindowListExcludeDesktopElements,
-            kCGWindowListOptionOnScreenOnly,
         )
     except ImportError as exc:
         log.error("PyObjC Quartz framework unavailable: %s", exc)
@@ -56,7 +55,9 @@ def _get_window_titles(pids: list[int]) -> list[str]:
     titled_windows: list[tuple[float, str]] = []
     owner_without_name = False
 
-    options = kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements
+    # Query all Spaces so a full-screen GFN stream remains detectable while the
+    # user is viewing Discord or another desktop.
+    options = kCGWindowListExcludeDesktopElements
     window_list = CGWindowListCopyWindowInfo(options, kCGNullWindowID) or []
 
     for window in window_list:
